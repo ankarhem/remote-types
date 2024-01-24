@@ -8,7 +8,7 @@ mod utils;
 
 use anyhow::Result;
 use axum::http::Method;
-use axum::{body::Body, http::Request, routing, Router};
+use axum::{body::Body, http::Request, Router};
 use once_cell::sync::Lazy;
 use reqwest::Client;
 
@@ -31,6 +31,9 @@ fn app() -> Router {
     };
 
     Router::new()
+        .merge(handlers::router())
+        .with_state(app_state)
+        .merge(utils::openapi::openapi_routes())
         .layer(CompressionLayer::new())
         .layer(
             CorsLayer::new()
@@ -58,12 +61,6 @@ fn app() -> Router {
             }),
         )
         .layer(RequestIdLayer)
-        .with_state(app_state)
-        // Omit these from the logs etc.
-        .route(
-            "/__healthcheck",
-            routing::get(handlers::healthcheck::handler),
-        )
 }
 
 pub async fn run(std_listener: TcpListener) -> Result<()> {
@@ -118,7 +115,7 @@ pub fn create_client() -> Result<Client, reqwest::Error> {
     Client::builder()
         .default_headers({
             let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert(reqwest::header::USER_AGENT, "PKG_NAME".parse().unwrap());
+            headers.insert(reqwest::header::USER_AGENT, "remote_types".parse().unwrap());
 
             headers
         })

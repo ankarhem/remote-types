@@ -1,16 +1,17 @@
 use anyhow::Result;
+use remote_types::telemetry;
 use std::net::TcpListener;
-use PKG_NAME::telemetry;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let subscriber = telemetry::get_subscriber("PKG_NAME".into(), "info".into(), std::io::stdout);
+    let subscriber =
+        telemetry::get_subscriber("remote_types".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
 
-    let listener = TcpListener::bind(format!("0.0.0.0:{port}"))?;
-    PKG_NAME::run(listener).await?;
+    let listener = TcpListener::bind(format!("127.0.0.1:{port}"))?;
+    remote_types::run(listener).await?;
 
     Ok(())
 }
