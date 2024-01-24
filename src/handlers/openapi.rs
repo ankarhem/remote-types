@@ -1,10 +1,10 @@
 use crate::prelude::*;
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use reqwest::Client;
+use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::instrument;
@@ -33,12 +33,17 @@ pub async fn get(
     State(state): State<AppState>,
     Query(query): Query<OpenApiParams>,
 ) -> Result<impl IntoResponse, AppError> {
+    let spec_url = query.url;
     let response = state
         .client
-        .get(query.url)
+        .get(&spec_url)
         .send()
         .await
-        .with_context(|| "Failed to get OpenAPI spec from {query.url}")?;
+        .with_context(|| format!("Failed to get OpenAPI spec from: `{spec_url}`"))?;
+
+    if response.status() != StatusCode::OK {
+        return Err(anyhow!("Spec url returned non OK status: `{}`", response.status()).into());
+    }
 
     let spec = response
         .json::<OpenApi>()
