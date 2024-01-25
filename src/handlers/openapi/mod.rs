@@ -1,14 +1,14 @@
-use crate::prelude::*;
+use crate::{models::PkgJson, prelude::*};
 use anyhow::{anyhow, Context, Result};
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use reqwest::{Client, StatusCode};
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use tokio::{fs::File, io::AsyncReadExt};
 use tracing::instrument;
-use utoipa::{openapi::OpenApi, IntoParams};
+use utoipa::IntoParams;
 
 use crate::AppState;
 
@@ -45,10 +45,19 @@ pub async fn get(
         return Err(anyhow!("Spec url returned non OK status: `{}`", response.status()).into());
     }
 
-    let spec = response
-        .json::<OpenApi>()
-        .await
-        .context("Could not parse json from openapi spec")?;
+    // let spec = response
+    //     .json::<OpenApi>()
+    //     .await
+    //     .context("Could not parse json from openapi spec")?;
+
+    let mut file = File::open("./templates/package.json").await?;
+    let mut data = String::new();
+    file.read_to_string(&mut data).await?;
+    let mut pkg_json: PkgJson = serde_json::from_str(&data)?;
+    pkg_json.name = "Test";
+
+    let st = serde_json::to_string(&pkg_json)?;
+    dbg!(st);
 
     Ok(())
 }

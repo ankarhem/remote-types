@@ -1,0 +1,19 @@
+{
+  "name": "___",
+  "version": "1.0.0",
+  "description": "Generated with remote-types",
+  "repository": "https://github.com/ankarhem/remote-types",
+  "author": {
+    "name": "Jakob Ankarhem",
+    "email": "jakob@ankarhem.dev",
+    "url": "https://github.com/ankarhem"
+  },
+  "types": "./index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "index.d.ts"
+  ],
+  "peerDependencies": {
+    "typescript": "*"
+  }
+}
