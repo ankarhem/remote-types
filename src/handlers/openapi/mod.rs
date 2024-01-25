@@ -1,14 +1,17 @@
 use crate::{models::PkgJson, prelude::*};
-use anyhow::{anyhow, Context, Result};
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
+};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Result,
 };
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tokio::{fs::File, io::AsyncReadExt};
 use tracing::instrument;
-use utoipa::IntoParams;
+use utoipa::{openapi::OpenApi, IntoParams};
 
 use crate::AppState;
 
@@ -39,16 +42,16 @@ pub async fn get(
         .get(&spec_url)
         .send()
         .await
-        .with_context(|| format!("Failed to get OpenAPI spec from: `{spec_url}`"))?;
+        .wrap_err_with(|| format!("Failed to get OpenAPI spec from: `{spec_url}`"))?;
 
     if response.status() != StatusCode::OK {
-        return Err(anyhow!("Spec url returned non OK status: `{}`", response.status()).into());
+        return Err(eyre!("Spec url returned non OK status: `{}`", response.status()).into());
     }
 
-    // let spec = response
-    //     .json::<OpenApi>()
-    //     .await
-    //     .context("Could not parse json from openapi spec")?;
+    let spec = response
+        .json::<OpenApi>()
+        .await
+        .context("Could not parse json from openapi spec")?;
 
     let mut file = File::open("./templates/package.json").await?;
     let mut data = String::new();

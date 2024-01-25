@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -18,9 +17,9 @@ use tracing::error;
 //     Ok(())
 // }
 
-// Make our own error that wraps `anyhow::Error`.
+// Make our own error that wraps `color_eyre::Report`.
 #[derive(Debug)]
-pub struct AppError(anyhow::Error);
+pub struct AppError(color_eyre::Report);
 
 // Tell axum how to convert `AppError` into a response.
 impl IntoResponse for AppError {
@@ -34,11 +33,11 @@ impl IntoResponse for AppError {
     }
 }
 
-// This enables using `?` on functions that return `Result<_, anyhow::Error>` to turn them into
+// This enables using `?` on functions that return `Result<_, color_eyre::Report>` to turn them into
 // `Result<_, AppError>`. That way you don't need to do that manually.
 impl<E> From<E> for AppError
 where
-    E: Into<anyhow::Error>,
+    E: Into<color_eyre::Report>,
 {
     fn from(err: E) -> Self {
         Self(err.into())

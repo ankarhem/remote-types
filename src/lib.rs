@@ -7,9 +7,9 @@ mod prelude;
 pub mod telemetry;
 mod utils;
 
-use anyhow::Result;
 use axum::http::Method;
 use axum::{body::Body, http::Request, Router};
+use color_eyre::Result;
 use once_cell::sync::Lazy;
 use reqwest::Client;
 

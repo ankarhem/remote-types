@@ -1,4 +1,4 @@
-use anyhow::Result;
+use color_eyre::Result;
 use remote_types::telemetry;
 use std::net::TcpListener;
 
@@ -7,6 +7,8 @@ async fn main() -> Result<()> {
     let subscriber =
         telemetry::get_subscriber("remote_types".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
+
+    color_eyre::install()?;
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
 
